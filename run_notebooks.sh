@@ -1,8 +1,8 @@
 pip install jupyter nbconvert torch torchvision scikit-learn matplotlib transformers datasets diffusers
 
 mkdir -p executed
-status=0
-for f in tp_seance*_corr.ipynb; do
+exit_status=0
+for f in tp_seance01*_corr.ipynb tp_seance02*_corr.ipynb tp_seance03*_corr.ipynb; do
     echo "=== $f ==="
     if jupyter nbconvert --to notebook --execute \
         --ExecutePreprocessor.timeout=3600 \
@@ -11,7 +11,7 @@ for f in tp_seance*_corr.ipynb; do
         echo "OK: $f"
     else
         echo "ECHEC: $f"
-        status=1
+        exit_status=1
     fi
 done
-exit $status
+exit $exit_status
