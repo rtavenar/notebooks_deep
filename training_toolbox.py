@@ -12,7 +12,8 @@ Plan de montee en puissance (aligne sur la progression du cours,
 11 seances) :
     Seance 1 (Prise en main PyTorch) -> pas de toolbox, torch pur
     Seance 2 (Optim manuelle)        -> pas de toolbox, torch pur
-    Seance 3 (Optim structuree)      -> naissance du Trainer (fit/evaluate)
+    Seance 3 (Optim structuree)      -> naissance du Trainer (fit/evaluate/
+                                         plot)
     Seance 4 (Losses & init)         -> metriques (accuracy) suivies dans
                                          l'historique
     Seance 5 (Regularisation)        -> callbacks (EarlyStopping,
@@ -36,6 +37,7 @@ Plan de montee en puissance (aligne sur la progression du cours,
 
 from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import torch
 
 
@@ -150,6 +152,28 @@ class Trainer:
     def evaluate(self, loader):
         return self._run_epoch(loader, train=False)
 
+    def plot(self, metrics=None, figsize=None):
+        """Trace loss (et les metriques suivies) train vs val en fonction des
+        epochs. Un sous-graphe par quantite trace ; utilisable des qu'un
+        `fit` a ete appele.
+
+            trainer.plot()               # loss + toutes les metriques suivies
+            trainer.plot(metrics=["acc"])  # uniquement loss + acc
+        """
+        names = ["loss"] + list(self.metrics if metrics is None else metrics)
+        figsize = figsize or (5 * len(names), 4)
+        fig, axes = plt.subplots(1, len(names), figsize=figsize)
+        axes = [axes] if len(names) == 1 else axes
+        for ax, name in zip(axes, names):
+            ax.plot(self.history[f"train_{name}"], label="train")
+            if self.history.get(f"val_{name}"):
+                ax.plot(self.history[f"val_{name}"], label="val")
+            ax.set_xlabel("epoch")
+            ax.set_title(name)
+            ax.legend()
+        plt.tight_layout()
+        plt.show()
+
 
 # ---------------------------------------------------------------------------
 # Seance 3 : callbacks
@@ -219,11 +243,3 @@ def count_trainable_parameters(model):
 def accuracy(preds, y):
     return (preds.argmax(dim=-1) == y).float().mean()
 
-
-# ---------------------------------------------------------------------------
-# Idees pour les seances suivantes (a implementer au fil de l'eau) :
-# - plot_history(history) : tracer loss/metriques train vs val (matplotlib)
-# - LRSchedulerCallback : wrapper autour de torch.optim.lr_scheduler
-# - mixed precision (torch.autocast + GradScaler) pour accelerer sur GPU
-# - CSVLogger callback : ecrire l'historique dans un fichier csv
-# ---------------------------------------------------------------------------
