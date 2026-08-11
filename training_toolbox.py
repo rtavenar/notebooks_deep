@@ -25,11 +25,12 @@ Plan de montee en puissance (aligne sur la progression du cours,
                                          besoin de toucher au Trainer)
     Seance 9 (Mini-projet CNN)       -> consolidation, pas de nouvelle
                                          brique
-    Seance 10 (Generatif)            -> ATTENTION : la boucle GAN (deux
-                                         optimiseurs, pas alternes) ne
-                                         rentre pas dans Trainer.fit tel
-                                         quel -> voir gan_trainer_skeleton.py
-                                         (classe a part, fournie a trous)
+    Seance 10 (Generatif)            -> consolidation, pas de nouvelle
+                                         brique : autoencodeur et flow
+                                         matching s'entrainent tous deux via
+                                         Trainer.fit, a condition de bien
+                                         choisir la paire (entree, cible)
+                                         renvoyee par le Dataset
     Seance 11 (HuggingFace)          -> freeze/unfreeze, count_trainable_
                                          parameters, gestion des batches/
                                          models HF (deja presents ci-dessous)
@@ -218,6 +219,17 @@ class ModelCheckpoint(Callback):
         if value is not None and value < self.best:
             self.best = value
             torch.save(trainer.model.state_dict(), self.path)
+
+
+class PeriodicCheckpoint(Callback):
+    def __init__(self, path_template="model_epoch{epoch}.pt", every=10):
+        self.path_template = path_template
+        self.every = every
+
+    def on_epoch_end(self, trainer, logs):
+        epoch = logs["epoch"] + 1  # logs["epoch"] est l'indice de l'epoch, 0-based
+        if epoch % self.every == 0:
+            torch.save(trainer.model.state_dict(), self.path_template.format(epoch=epoch))
 
 
 # ---------------------------------------------------------------------------
