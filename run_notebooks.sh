@@ -2,7 +2,7 @@ pip install jupyter nbconvert torch torchvision scikit-learn matplotlib transfor
 
 mkdir -p executed
 exit_status=0
-for f in tp_seance04*_corr.ipynb; do
+for f in tp_seance*_corr.ipynb; do
     echo "=== $f ==="
     if jupyter nbconvert --to notebook --execute \
         --ExecutePreprocessor.timeout=3600 \
